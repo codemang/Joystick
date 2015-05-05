@@ -15,8 +15,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.JFrame;
 import java.awt.Color;
+import java.io.*;
 
-public class SerialTest implements SerialPortEventListener {
+public class JoystickReader implements SerialPortEventListener {
 	SerialPort serialPort;
   int i = 0;
 	/** The port we're normally going to use. */
@@ -115,7 +116,7 @@ public class SerialTest implements SerialPortEventListener {
 	}
 
 	/**
-	 * Handle an event on the serial port. Read the data and print it.
+	 * Handle an event on the serial port.
 	 */
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
@@ -135,6 +136,41 @@ public class SerialTest implements SerialPortEventListener {
 		}
 	}
 
+  public static synchronized void printOptions() throws IOException {
+    System.out.println("\n\nChoose which game you would like to play.\n");
+    File folder = new File("./Games");
+    File[] listOfFiles = folder.listFiles();
+
+    
+    for (int i = 0; i < listOfFiles.length; i++) {
+      if (listOfFiles[i].isFile()) {
+        System.out.println("   " + (i + 1) + ": " + listOfFiles[i].getName());
+      }
+    }
+
+    int gameSelection;
+    while (true) {
+      System.out.print("\nEnter Game Number: ");
+      int ch;
+      String input = "";
+      while ((ch = System.in.read ()) != '\n')
+        input += (char)ch;
+
+      try {
+        gameSelection = Integer.parseInt(input);
+        if (gameSelection > listOfFiles.length)
+          System.out.println("Error: you must choose a game number within the available indices.");
+        else 
+          break;
+      }
+      catch (NumberFormatException e) {
+        System.out.println("Error: you must input a number to select a game, try again.");
+      }
+    }
+  }
+  /**
+   * 
+   */
   public synchronized void handleMessage(int messageIndex) {
     System.out.println(allMessages[messageIndex]);
     if (messageIndex >= 0 && messageIndex <= 7) {
@@ -152,7 +188,7 @@ public class SerialTest implements SerialPortEventListener {
   }
 
 	public static void main(String[] args) throws Exception {
-		SerialTest main = new SerialTest();
+		JoystickReader main = new JoystickReader();
 		main.initialize();
 		Thread t = new Thread() {
 			public void run() {
@@ -166,7 +202,6 @@ public class SerialTest implements SerialPortEventListener {
 			}
 		};
 		t.start();
-		System.out.println("- Started -");
-		System.out.println("");
+    printOptions();
 	}
 }
